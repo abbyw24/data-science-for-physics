@@ -86,37 +86,6 @@ class Signal:
 
 ### MCMC ###
 
-# general function for a M-H MCMC sampler, given a sample distribution, proposal distribution, number of hops and initial state
-def MCMC(n, x, sample_dist, prop_dist):
-    
-    dim = 1 if type(x)==int or type(x)==float else len(x)
-
-    states = np.empty((n, dim))
-
-    current = x
-
-    for i in range(n):
-        # proposal PDF
-        proposal = prop_dist(current)
-
-        # draw random number from a uniform distribution
-        rand_val = np.random.uniform()
-
-        # evaluate the function to be sampled at both current and proposed vals
-        p_current = sample_dist(current)
-        p_proposal = sample_dist(proposal)
-
-        # do we accept the proposal?
-        # avoid division by zero– if p_current is zero, we automatically reject the proposal
-        if p_current != 0:
-            ratio = p_proposal/p_current
-            if ratio > rand_val:
-                current = proposal
-        states[i] = current
-    
-    return states
-
-
 def mh_step(pars, lnpost, proposal):
     # draw from proposal distribution
     new = proposal(pars)
@@ -138,10 +107,11 @@ def mh_mcmc(n, init_pars, lnpost, proposal):
     # empty array to hold the states
     states = np.empty((n, dim))
 
+    # start with initial parameters
     current = init_pars
 
     for i in range(n):
-        current = mh_step(current, lnpost, proposal)
-        states[i] = current
-    
+        current = mh_step(current, lnpost, proposal)    # makes a proposal, then either accepts or rejects; so current either stays the same or moves to new location
+        states[i] = current     # record this step
+        
     return states
